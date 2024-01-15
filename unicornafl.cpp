@@ -333,7 +333,13 @@ class UCAFL {
 
     static void _uc_hook_block(uc_engine* uc, uint64_t address, uint32_t size,
                                void* user_data) {
-        uint64_t cur_loc = afl_hash_ip(address) & (MAP_SIZE - 1);
+	//monkey patch to only instrument relevant areas
+        if(address< 0x0056555000 || address >0x005663a000){
+            ERR_CHILD("not instrumenting 0x%" PRIx64 "\n",
+                  address);
+            return;
+        }
+	uint64_t cur_loc = afl_hash_ip(address) & (MAP_SIZE - 1);
         UCAFL* ucafl = (UCAFL*)user_data;
 
         ucafl->afl_area_ptr_[cur_loc ^ ucafl->afl_prev_loc_]++;
